@@ -1,0 +1,65 @@
+import requests 
+import bs4 
+request1=requests.get('https://www.flipkart.com/poco-c31-royal-blue-64-gb/p/itm19effae969b86') 
+request1 
+request1.content 
+soup = bs4.BeautifulSoup(request1.text) 
+#Fetching Reviews Or Comments 
+reviews=soup.findAll('div',{'class':'ZmyHeo'}); 
+for review in reviews: 
+print(review.get_text() + "\n\n") 
+#Fetching Overall Ratings 
+ratings=soup.find('div' ,{'class' : 'ipqd2A'}).get_text(); 
+print(ratings) 
+#Fetching Individual Ratings 
+rating=soup.findAll('div' ,{'class' : 'XQDdHH Ga3i8K'}); 
+for rating1 in rating: 
+print(rating1.get_text() +"\n\n") 
+#Fetching Tags 
+tag=soup.find('span' ,{'class' : '_6EBuvT OHdLLG'}).get_text(); 
+tag 
+#Fetching Customer Name 
+cus_name= soup.findAll('p' ,{'class' : '_2NsDsF AwS1CA'}); 
+for customer in cus_name: 
+print(customer.get_text() +"\n\n"); 
+price = soup.find('div',{'class' : 'Nx9bqj CxhGGd yKS4la'}).get_text(); 
+print(price) 
+
+
+
+
+
+
+
+
+import requests 
+import bs4 
+request1=requests.get('https://www.flipkart.com/vebnor-men-solid-casual-maroon
+shirt/p/itm888dc158ad656?pid=SHTGZAF3YSXYYZW7&lid=LSTSHTGZAF3YSXYYZW74TGHRY&marketplac
+ e=FLIPKART&store=clo%2Fash&srno=b_1_4&otracker=browse&fm=Search&iid=ef74f08f-ff64-4a79
+90ee
+da8174ceb265.SHTGZAF3YSXYYZW7.SEARCH&ppt=browse&ppn=browse&ssid=836weofv1c0000001746
+ 277114983') 
+request1 
+request1.content 
+soup = bs4.BeautifulSoup(request1.text) 
+#Fetching Reviews Or Comments 
+reviews=soup.findAll('div',{'class':'ZmyHeo MDcJkH'}); 
+for review in reviews: 
+print(review.get_text() + "\n\n") 
+#Fetching Overall Ratings 
+ratings=soup.find('div' ,{'class' : 'XQDdHH _6er70b'}).get_text(); 
+print(ratings) 
+#Fetching Individual Ratings 
+rating=soup.findAll('div' ,{'class' : 'XQDdHH Ga3i8K _9lBNRY'}); 
+for rating1 in rating: 
+print(rating1.get_text() +"\n\n") 
+#Fetching Tags 
+tag=soup.find('span' ,{'class' : '_6EBuvT OHdLLG +v3tB6'}).get_text(); 
+tag 
+#Fetching Customer Name 
+cus_name= soup.findAll('p' ,{'class' : '_2NsDsF AwS1CA MDcJkH'}); 
+for customer in cus_name: 
+print(customer.get_text() +"\n\n"); 
+price = soup.find('div',{'class' : 'Nx9bqj CxhGGd'}).get_text(); 
+print(price) 
