@@ -1,0 +1,62 @@
+Start Hadoop and Hive: 
+start-dfs.sh 
+start-yarn.sh 
+Start Hive: 
+Hive 
+Open Hive CLI: 
+• Type hive in your terminal to access the Hive command line interface (CLI). 
+• The prompt should look like this: 
+hive> 
+1) Creating and Using a Database: 
+CREATE DATABASE flight_db; 
+USE flight_db; 
+2) Creating Tables: 
+CREATE TABLE flight_info ( 
+flight_id INT, 
+date STRING, 
+origin STRING, 
+destination STRING, 
+departure_delay INT, 
+arrival_delay INT 
+) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE; 
+3) Altering the Table: 
+ALTER TABLE flight_info ADD COLUMNS (airline STRING); 
+4) Dropping the Table (If needed): 
+DROP TABLE flight_info; 
+5) Creating an External Table: 
+CREATE EXTERNAL TABLE ext_flight_info ( 
+flight_id INT, 
+date STRING, 
+origin STRING, 
+destination STRING, 
+departure_delay INT, 
+arrival_delay INT 
+) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE 
+LOCATION '/user/hive/warehouse/ext_flight_info_data/'; 
+6) Loading Data into Hive Table: 
+LOAD DATA LOCAL INPATH '/home/hadoopuser/flights_2008.csv' 
+INTO TABLE flight_info; 
+7) Inserting Data into Tables: 
+INSERT INTO TABLE flight_info VALUES (7, '2008-01-05', 'SFO', 'LAX', 25, 5, 
+'Delta'); 
+8) Creating and Using Indexes: 
+CREATE INDEX flight_delay_index 
+ON TABLE flight_info (departure_delay) 
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler' 
+WITH DEFERRED REBUILD; 
+9) Joining Tables: 
+SELECT fi.flight_id, fi.origin, ai.city AS origin_city 
+FROM flight_info fi 
+JOIN airport_info ai ON fi.origin = ai.code; 
+10) Calculating Average Departure Delay: 
+SELECT date, AVG(departure_delay) AS avg_departure_delay 
+FROM flight_info 
+WHERE year(date) = 2008 
+GROUP BY date 
+ORDER BY date; 
