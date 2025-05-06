@@ -1,31 +1,44 @@
 import pandas as pd 
+
 df = pd.read_csv('C:/Users/shank/Downloads/facebook_metrics.csv') 
+
 df.head() 
+
 #a. Create Data Subsets 
 # Subset 1: Select only demographic-related columns 
 demographic_subset = df[['userid', 'age', 'gender', 'dob_day', 'dob_month', 'dob_year']] 
 print("Demographic Subset:") 
 print(demographic_subset.head()) 
+
 # Subset 2: Select only interaction metrics 
 interaction_subset = df[['userid', 'friend_count', 'likes', 'likes_received']] 
 print("\nInteraction Metrics Subset:") 
 print(interaction_subset.head()) 
+
+
 # b. Merge Data 
 df1 = df[['userid', 'age', 'gender']] 
 df2 = df[['userid', 'friend_count', 'likes']] 
 merged_df = pd.merge(df1, df2, on='userid') 
 print("\nMerged DataFrame on 'userid':") 
 print(merged_df.head()) 
+
+
 # c. Sort Data 
 sorted_df = df.sort_values(by='likes_received', ascending=False) 
 print("\nTop users sorted by likes_received:") 
 print(sorted_df[['userid', 'likes_received']].head()) 
+
+
 # d. Transposing Data 
 transposed_df = df.head(3).T 
 print("\nTransposed DataFrame (first 3 rows):") 
 print(transposed_df) 
+
+
 # e. Shape and Reshape Data 
 print("\nOriginal shape of DataFrame:", df.shape) 
+
 # Reshape using melt to convert likes data from wide to long format 
 reshaped_df = pd.melt( 
 df, 
