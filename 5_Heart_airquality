@@ -1,0 +1,55 @@
+import pandas as pd 
+import numpy as np 
+from sklearn.model_selection import train_test_split 
+from sklearn.linear_model import LogisticRegression 
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report 
+# Load datasets 
+heart_df = pd.read_csv('C:/Users/shank/Downloads/Heart.csv') 
+air_quality_df = pd.read_csv('C:/Users/shank/Downloads/AirQuality.csv', sep=';')  # assuming ; is 
+separator 
+heart_df.head() 
+air_quality_df.head() 
+#1 data cleaning 
+print("Heart Dataset Missing:\n", heart_df.isnull().sum()) 
+print("Air Quality Dataset Missing:\n", air_quality_df.isnull().sum()) 
+heart_df = heart_df.fillna(heart_df.median(numeric_only=True)) 
+air_quality_df = air_quality_df.fillna(air_quality_df.mean(numeric_only=True)) 
+heart_df = heart_df.drop_duplicates() 
+air_quality_df = air_quality_df.drop_duplicates() 
+heart_df.head() 
+air_quality_df.head() 
+#2data integration 
+heart_df.reset_index(drop=True, inplace=True) 
+air_quality_df.reset_index(drop=True, inplace=True) 
+min_len = min(len(heart_df), len(air_quality_df)) 
+heart_df = heart_df[:min_len] 
+air_quality_df = air_quality_df[:min_len] 
+merged_df = pd.concat([heart_df, air_quality_df], axis=1) 
+merged_df.head() 
+#3data transformation 
+from sklearn.preprocessing import MinMaxScaler 
+scaler = MinMaxScaler() 
+heart_df[['age', 'trestbps', 'chol', 'thalach', 'oldpeak']] = scaler.fit_transform( 
+heart_df[['age', 'trestbps', 'chol', 'thalach', 'oldpeak']] 
+) 
+heart_df['sex'] = heart_df['sex'].astype('category') 
+heart_df['cp'] = heart_df['cp'].astype('category') 
+heart_df.head() 
+#4 error correcting 
+heart_df = heart_df[(heart_df['age'] >= 0) & (heart_df['thalach'] > 0)] 
+air_quality_df['CO(GT)'] = pd.to_numeric(air_quality_df['CO(GT)'], errors='coerce') 
+air_quality_df = air_quality_df[air_quality_df['CO(GT)'] >= 0] 
+print("Cleaned Heart Dataset:") 
+print(heart_df.head()) 
+print("Cleaned Air Quality Dataset:") 
+print(air_quality_df.head()) 
+print("Integrated Dataset:") 
+print(merged_df.head()) 
+#5data model building 
+X = heart_df.drop('target', axis=1) 
+y = heart_df['target'] 
+X = pd.get_dummies(X, drop_first=True)  
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) 
+print("Accuracy Score:", accuracy_score(y_test, y_pred)) 
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred)) 
+print("Classification Report:\n", classification_report(y_test, y_pred)) 
