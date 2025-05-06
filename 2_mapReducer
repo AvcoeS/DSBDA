@@ -1,0 +1,114 @@
+ 
+ 
+/LogAnalyzer 
+    |-- LogMapper.java 
+    |-- LogReducer.java 
+    |-- Driver.java 
+    |-- log.txt 
+ 
+1) LogMapper.java 
+import java.io.IOException; 
+import org.apache.hadoop.io.*; 
+import org.apache.hadoop.mapreduce.Mapper; 
+ 
+public class LogMapper extends Mapper<LongWritable, Text, Text, Text> { 
+    public void map(LongWritable key, Text value, Context context) throws IOException, 
+InterruptedException { 
+        // Sample: user1 login 2024-05-01 09:00:00 
+        String[] parts = value.toString().split(" "); 
+        if (parts.length >= 4) { 
+            String user = parts[0]; 
+            String action = parts[1]; 
+            String timestamp = parts[2] + " " + parts[3]; 
+            context.write(new Text(user), new Text(action + " " + timestamp)); 
+        } 
+    } 
+} 
+ 
+2) LogReducer.java 
+ import java.io.IOException; 
+import java.text.SimpleDateFormat; 
+import java.util.*; 
+ 
+ 
+import org.apache.hadoop.io.*; 
+import org.apache.hadoop.mapreduce.Reducer; 
+ 
+public class LogReducer extends Reducer<Text, Text, Text, LongWritable> { 
+    public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, 
+InterruptedException { 
+        List<String> events = new ArrayList<>(); 
+        for (Text val : values) { 
+            events.add(val.toString()); 
+        } 
+ 
+        // Sort events by timestamp 
+        Collections.sort(events, Comparator.comparing(s -> s.split(" ", 2)[1])); 
+ 
+        long totalDuration = 0; 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+ 
+        for (int i = 0; i < events.size() - 1; i++) { 
+            String[] loginParts = events.get(i).split(" ", 2); 
+            String[] logoutParts = events.get(i + 1).split(" ", 2); 
+ 
+            if (loginParts[0].equals("login") && logoutParts[0].equals("logout")) { 
+                try { 
+                    Date loginTime = sdf.parse(loginParts[1]); 
+                    Date logoutTime = sdf.parse(logoutParts[1]); 
+                    totalDuration += (logoutTime.getTime() - loginTime.getTime()) / 1000; // seconds 
+                    i++; // skip next as it's logout 
+                } catch (Exception e) { 
+                    e.printStackTrace(); 
+ 
+ 
+                } 
+            } 
+        } 
+ 
+        context.write(key, new LongWritable(totalDuration)); 
+    } 
+} 
+ 
+ 
+3) Driver.java 
+import org.apache.hadoop.conf.Configuration; 
+import org.apache.hadoop.fs.Path; 
+import org.apache.hadoop.io.*; 
+import org.apache.hadoop.mapreduce.Job; 
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat; 
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat; 
+ 
+public class Driver { 
+    public static void main(String[] args) throws Exception { 
+        Configuration conf = new Configuration(); 
+        Job job = Job.getInstance(conf, "Log Duration Calculator"); 
+ 
+        job.setJarByClass(Driver.class); 
+        job.setMapperClass(LogMapper.class); 
+        job.setReducerClass(LogReducer.class); 
+ 
+        job.setOutputKeyClass(Text.class); 
+        job.setOutputValueClass(Text.class); 
+ 
+FileInputFormat.addInputPath(job, new Path(args[0])); 
+FileOutputFormat.setOutputPath(job, new Path(args[1])); 
+System.exit(job.waitForCompletion(true) ? 0 : 1); 
+} 
+} 
+3) Log.txt 
+user1 login 2024-05-01 09:00:00 
+user1 logout 2024-05-01 11:00:00 
+user2 login 2024-05-01 10:00:00 
+user2 logout 2024-05-01 14:00:00 
+user1 login 2024-05-01 16:00:00 
+user1 logout 2024-05-01 18:00:00 
+Commands to run 
+hdfs dfs -mkdir /input 
+hdfs dfs -put log.txt /input 
+hadoop com.sun.tools.javac.Main *.java 
+jar cf loganalysis.jar *.class 
+hadoop jar loganalysis.jar Driver /input /output 
+hdfs dfs -cat /output/part-r-00000 
+Output user1 14400 
+user2 14400 
